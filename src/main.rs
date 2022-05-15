@@ -1,23 +1,6 @@
 use std::error::Error;
-use serde::Deserialize;
 use colour::{dark_green, yellow};
-
-#[derive(Deserialize, Debug)]
-struct Articles {
-    articles: Vec<Article>
-}
-#[derive(Deserialize, Debug)]
-struct Article {
-    title: String,
-    url: String
-}
-
-fn get_articles(url: &str) -> Result<Articles, Box<dyn Error>> {
-    let response = ureq::get(url).call()?.into_string()?;
-    let articles = serde_json::from_str::<Articles>(&response)?;
-
-    Ok(articles)
-}
+use newsapi::{Articles, get_articles};
 
 fn render_articles(articles: &Articles) {
     for i in &articles.articles {
