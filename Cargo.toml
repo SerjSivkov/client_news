@@ -3,6 +3,9 @@ name = "clinews"
 version = "0.1.0"
 edition = "2021"
 
+description = "A simple cli news reader app"
+license = "MIT"
+authors = ["Sivkov Sergey"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
