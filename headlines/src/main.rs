@@ -13,15 +13,20 @@ impl App for Headlines {
         } else {
             ctx.set_visuals(Visuals::light());
         }
-        
-        self.render_top_panel(ctx, frame);
-        CentralPanel::default().show(ctx, |ui| {
-            render_header(ui);
-            ScrollArea::auto_sized().show(ui, |ui| { // Добавление скрола
-                self.render_news_cards(ui);
+        if !self.api_key_initialized {
+            self.render_config(ctx);
+        } else {
+            // self.preload_articles();
+
+            self.render_top_panel(ctx, frame);
+            CentralPanel::default().show(ctx, |ui| {
+                render_header(ui);
+                ScrollArea::auto_sized().show(ui, |ui| {
+                    self.render_news_cards(ui);
+                });
+                render_footer(ctx);
             });
-            render_footer(ctx)
-        });
+        }
     }
 
     fn name(&self) -> &str {
@@ -50,6 +55,8 @@ fn render_header(ui: &mut Ui) {
 }
 
 fn main() {
+    tracing_subscriber::fmt::init();
+    // tracing::error!("this is a log");
     let app = Headlines::new();
     let mut window_option = NativeOptions::default();
     window_option.initial_window_size = Some(Vec2::new(540., 920.));
