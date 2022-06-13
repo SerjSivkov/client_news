@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, sync::mpsc::Receiver};
 use eframe::egui::{CtxRef, FontDefinitions, FontFamily, Color32, Label, Layout, Hyperlink, Separator, TopBottomPanel, self, Button, Window};
 use serde::{Serialize, Deserialize};
 
@@ -23,7 +23,8 @@ impl Default for HeadlinesConfig {
 pub struct Headlines {
     pub articles: Vec<NewsCardData>,
     pub config: HeadlinesConfig,
-    pub api_key_initialized: bool
+    pub api_key_initialized: bool,
+    pub news_rx: Option<Receiver<NewsCardData>>
 }
 
 pub struct NewsCardData {
@@ -38,7 +39,8 @@ impl Headlines {
         Headlines {
             api_key_initialized: !config.api_key.is_empty(),
             articles: vec![],
-            config
+            config,
+            news_rx: None
         }
     }
 
@@ -110,6 +112,19 @@ impl Headlines {
             });
             ui.add_space(10.);
         });
+    }
+
+    pub fn preload_articles(&mut self) {
+        if let Some(rx) = &self.news_rx {
+            match rx.try_recv() {
+                Ok(news_data) => {
+                    self.articles.push(news_data);
+                },
+                Err(e) => {
+                    tracing::warn!("Error receiving msg: {}", e);
+                }
+            }
+        }
     }
 
     pub fn render_config(&mut self, ctx: &CtxRef) {
