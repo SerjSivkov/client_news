@@ -1,5 +1,5 @@
 mod headlines;
-use eframe::{NativeOptions, egui::{CentralPanel, ScrollArea, Vec2, Ui, Separator, TopBottomPanel, CtxRef, Label, Hyperlink}, epi::App, run_native};
+use eframe::{NativeOptions, egui::{CentralPanel, ScrollArea, Vec2, Ui, Separator, TopBottomPanel, CtxRef, Label, Hyperlink, Visuals}, epi::App, run_native};
 use headlines::{Headlines, PADDING};
 
 impl App for Headlines {
@@ -8,7 +8,13 @@ impl App for Headlines {
     }
 
     fn update(&mut self, ctx: &eframe::egui::CtxRef, frame: &mut eframe::epi::Frame<'_>) {
-        self.render_top_panel(ctx);
+        if self.config.dark_mode {
+            ctx.set_visuals(Visuals::dark());
+        } else {
+            ctx.set_visuals(Visuals::light());
+        }
+        
+        self.render_top_panel(ctx, frame);
         CentralPanel::default().show(ctx, |ui| {
             render_header(ui);
             ScrollArea::auto_sized().show(ui, |ui| { // Добавление скрола
