@@ -21,30 +21,24 @@ impl Default for HeadlinesConfig {
 }
 
 pub struct Headlines {
-    articles: Vec<NewsCardData>,
+    pub articles: Vec<NewsCardData>,
     pub config: HeadlinesConfig,
     pub api_key_initialized: bool
 }
 
-struct NewsCardData {
-    title: String,
-    desc: String,
-    url: String
+pub struct NewsCardData {
+    pub title: String,
+    pub desc: String,
+    pub url: String
 }
 
 impl Headlines {
     pub fn new() -> Headlines {
-        let iter = (0..20).map(|article| NewsCardData {
-            title: format!("title{}", article),
-            desc: format!("desc{}", article),
-            url: format!("http://example.com/{}", article)
-        });
-
         let config: HeadlinesConfig = confy::load("headlines").unwrap_or_default();
         Headlines {
-            articles: Vec::from_iter(iter),
-            config,
-            api_key_initialized: false
+            api_key_initialized: !config.api_key.is_empty(),
+            articles: vec![],
+            config
         }
     }
 

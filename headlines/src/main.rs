@@ -1,9 +1,30 @@
 mod headlines;
 use eframe::{NativeOptions, egui::{CentralPanel, ScrollArea, Vec2, Ui, Separator, TopBottomPanel, CtxRef, Label, Hyperlink, Visuals}, epi::App, run_native};
-use headlines::{Headlines, PADDING};
+use headlines::{Headlines, NewsCardData, PADDING};
+use newsapi::NewsAPI;
+
+fn fetch_news(api_key: &str, articles: &mut Vec<NewsCardData>) {
+    if let Ok(response) = NewsAPI::new(&api_key).fetch() {
+        let resp_articles = response.articles();
+        for a in resp_articles.iter() {
+            let news = NewsCardData {
+                title: a.title().to_string(),
+                url: a.url().to_string(),
+                desc: a.desc().map(|s| s.to_string()).unwrap_or("...".to_string())
+            };
+            articles.push(news);
+            // if let Err(e) = news_tx.send(news) {
+            //     tracing::error!("Error sending news data: {}", e);
+            // }
+        }
+    } else {
+        tracing::error!("failed fetching news");
+    }
+}
 
 impl App for Headlines {
     fn setup(&mut self, ctx: &eframe::egui::CtxRef, _frame: &mut eframe::epi::Frame<'_>, _storage: Option<&dyn eframe::epi::Storage>) {
+        fetch_news(&self.config.api_key, &mut self.articles);
         self.configure_fonts(ctx);
     }
 
