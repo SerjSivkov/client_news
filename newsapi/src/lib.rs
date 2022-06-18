@@ -131,8 +131,7 @@ impl NewsAPI {
     pub async fn fetch_async(&mut self) -> Result<NewsAPIResponse, NewsApiError> {
         let url = self.prepare_url()?;
         let client = reqwest::Client::new();
-        let request = client
-                            .request(Method::GET, url)
+        let request = client.request(Method::GET, url)
                             .header("Authorization", &self.api_key)
                             .build()
                             .map_err(|e| NewsApiError::AsyncRequestFailed(e))?;
@@ -145,6 +144,24 @@ impl NewsAPI {
         match response.status.as_str() {
             "ok" => return Ok(response),
             _ => return Err(map_response_err(response.code))
+        }
+    }
+
+    #[cfg(target_arch = "wasm-32")]
+    pub async fn fetch_web(&self) -> Result<NewsAPIResponse, NewsApiError> {
+        let url = self.prepare_url();
+        let req = reqwasm::http::Request::get(&url).header("Authorization", &self.api_key);
+        let resp = req.send()
+                      .await
+                      .map_err(|_| NewsApiError::BadRequest("failed sending request"))?;
+
+        let response: NewsAPIResponse = resp.json()
+                                            .await
+                                            .map_err(|_| NewsApiError::BadRequest("failed converting response to json"))?;
+
+        match response.status.as_str() {
+            "ok" => return Ok(response),
+            _ => return Err(map_response_err(response.code)),
         }
     }
 }

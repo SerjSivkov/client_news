@@ -9,7 +9,8 @@ const CYAN: Color32 = Color32::from_rgb(0, 255, 255);
 const RED: Color32 = Color32::from_rgb(255, 0, 0);
 
 pub enum Msg {
-    ApiKeySet(String)
+    ApiKeySet(String),
+    Refresh,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -104,6 +105,12 @@ impl Headlines {
                         frame.quit();
                     }
                     let refresh_btn = ui.add(Button::new("🔄").text_style(egui::TextStyle::Body));
+                    if refresh_btn.clicked() {
+                        self.articles.clear();
+                        if let Some(tx) = &self.app_tx {
+                            tx.send(Msg::Refresh);
+                        }
+                    }
                     let theme_btn = ui.add(Button::new({
                         if self.config.dark_mode {
                             "🌞"
